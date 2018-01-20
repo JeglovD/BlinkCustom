@@ -43,20 +43,14 @@ ISR(TIMER2_COMPA_vect)
 		(long)(risingConfirmMillis - fallingConfirmMillis) >= 0 &&
 		(long)(fallingMillis - risingMillis) >= 0 &&
 		millis() - fallingMillis > 10)
-	{
 		fallingConfirmMillis = millis();
-		std::cout << "\\";
-	}
 
 	// risingConfirmMillis
 	if (digitalRead(2) == HIGH &&
 		(long)(fallingConfirmMillis - risingConfirmMillis) >= 0 &&
 		(long)(risingMillis - fallingMillis) >= 0 &&
 		millis() - risingMillis > 10)
-	{
 		risingConfirmMillis = millis();
-		std::cout << "/";
-	}
 
 	// Включение
 	if (!power &&
@@ -75,11 +69,15 @@ ISR(TIMER2_COMPA_vect)
 	// Мигаем
 	if (power)
 	{
-		if (millis() - ledMillis > 1000)
+		unsigned int frequency = 1000 + analogRead(A0) * 3;
+		unsigned int ratio = frequency * double(analogRead(A1)) / 1024 / 2;
+		if (millis() - ledMillis > frequency)
 		{
 			ledMillis = millis();
-			digitalWrite(LED_BUILTIN, HIGH - digitalRead(LED_BUILTIN));
+			digitalWrite(LED_BUILTIN, HIGH);
 		}
+		if (millis() - ledMillis > ratio)
+			digitalWrite(LED_BUILTIN, LOW);
 	}
 	else
 		digitalWrite(LED_BUILTIN, LOW);
@@ -94,6 +92,9 @@ void setup()
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(interruptionPin, INPUT);
 	digitalWrite(interruptionPin, HIGH);
+
+	pinMode(A0, INPUT);
+	pinMode(A1, INPUT);
 
 	// Таймер
 	// Устанавливаем режим - сброс при совпадении
