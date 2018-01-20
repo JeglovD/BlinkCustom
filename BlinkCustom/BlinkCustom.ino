@@ -4,6 +4,7 @@
 const byte interruptionPin(2);
 
 volatile unsigned long fallingMillis;
+volatile unsigned long risingMillis;
 volatile bool power(false);
 
 namespace std
@@ -11,11 +12,10 @@ namespace std
 	ohserialstream cout(Serial);
 }
 
-void Interruption()
+void InterruptionFalling()
 {
 	if (millis() - fallingMillis > 1000)
 	{
-		std::cout << millis() - fallingMillis << std::endl;
 		fallingMillis = millis();
 
 		power = !power;
@@ -27,11 +27,11 @@ void setup()
 {
 	Serial.begin(115200);
 
-	fallingMillis = millis();
+	fallingMillis = risingMillis = millis();
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(interruptionPin, INPUT);
 	digitalWrite(interruptionPin, HIGH);
-	attachInterrupt(0, Interruption, FALLING);
+	attachInterrupt(0, InterruptionFalling, FALLING);
 }
 
 void loop() 
