@@ -12,13 +12,6 @@ enum Command
 
 Command command;
 
-//const byte interruptionPin(2);
-
-//volatile unsigned long fallingMillis;
-//volatile unsigned long fallingConfirmMillis;
-//volatile unsigned long risingMillis;
-//volatile unsigned long risingConfirmMillis;
-//volatile unsigned long powerOffMillis;
 volatile unsigned long ledMillis;
 volatile unsigned long risingMillis;
 
@@ -27,19 +20,6 @@ namespace std
 	ohserialstream cout(Serial);
 }
 
-//void InterruptionFalling()
-//{
-//	std::cout << "InterruptionFalling()" << std::endl;
-//	clickBeginMillis = millis();
-//
-//	//fallingMillis = millis();
-//
-//	//sleep_disable();
-//	//detachInterrupt(0);
-//	//sleep = false;
-//	//std::cout << "InterruptionLow()" << std::endl;
-//}
-
 void InterruptionRising()
 {
 	std::cout << "InterruptionRising()" << std::endl;
@@ -47,26 +27,7 @@ void InterruptionRising()
 
 	if (command == Command::Nothing)
 		command = Command::WaitBeforeSleep;
-
-	//fallingMillis = millis();
-
-	//sleep_disable();
-	//detachInterrupt(0);
-	//sleep = false;
-	//std::cout << "InterruptionLow()" << std::endl;
 }
-
-//void sleepNow()
-//{
-//	//powerOffMillis = 20;
-//	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-//	sleep_enable();
-//	attachInterrupt(0, InterruptionLow, LOW);
-//	//MCUCR = bit(BODS) | bit(BODSE);
-//	//MCUCR = bit(BODS);
-//	//sleep_mode();
-//	sleep_cpu();
-//}
 
 // Функция, вызываемая таймером 2 при совпадении с регистром А
 ISR(TIMER2_COMPA_vect)
@@ -107,6 +68,8 @@ void loop()
 				pinMode(i, INPUT);
 				digitalWrite(i, LOW);
 			}
+			// Отключение подсистемы аналого-цифрового преобразования
+			ADCSRA = 0;
 
 			pinMode(LED_BUILTIN, OUTPUT);
 
@@ -146,21 +109,15 @@ void loop()
 			set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 			sleep_enable();
 			attachInterrupt(0, NULL, LOW);
-			sleep_mode();
+			// Выключение Brown-out Detector(BOD) - встроенная в ATmega подсистема, следящая за уровнем питания чипа
+			MCUCR = bit(BODS) | bit(BODSE);
+			MCUCR = bit(BODS);
+			// Уходим в сон
+			sleep_cpu();
+			// Точка выхода из сна - в нее вернемся после срабатывания LOW прерывания
 			sleep_disable();
 
 			break;
 		}
 	}
-
-	//if (fallingMillis != fallingMillisOld &&
-	//	millis() - fallingMillis > 10)
-	//{
-	//	fallingMillisOld = fallingMillis;
-	//	std::cout << "click" << std::endl;
-	//	std::cout << "sleep" << std::endl;
-
-
-	//	attachInterrupt(0, InterruptionFalling, FALLING);
-	//}
 }
