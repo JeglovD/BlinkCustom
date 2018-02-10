@@ -12,6 +12,8 @@ enum Command
 
 Command command;
 
+unsigned int ledFrequency = 150;	// max 1023
+unsigned int ledRatio = 150;		// max 1023
 volatile unsigned long ledMillis;
 volatile unsigned long risingMillis;
 
@@ -33,8 +35,8 @@ void InterruptionRising()
 ISR(TIMER2_COMPA_vect)
 {
 	// Мигаем
-	unsigned int frequency = 1000 + analogRead(A0) * 3;
-	unsigned int ratio = frequency * double(analogRead(A1)) / 1024 / 2;
+	unsigned int frequency = 1000 + ledFrequency * 3;
+	unsigned int ratio = frequency * double(ledRatio) / 1024 / 2;
 	if (millis() - ledMillis > frequency)
 	{
 		ledMillis = millis();
@@ -72,6 +74,7 @@ void loop()
 			ADCSRA = 0;
 
 			pinMode(LED_BUILTIN, OUTPUT);
+			digitalWrite(LED_BUILTIN, HIGH);
 
 			// Прерывание по внешнему сигналу
 			attachInterrupt(0, InterruptionRising, RISING);
